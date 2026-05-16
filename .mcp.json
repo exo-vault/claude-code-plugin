@@ -1,0 +1,10 @@
+{
+  "exovault": {
+    "command": "npx",
+    "args": ["-y", "exovault-mcp-server"],
+    "env": {
+      "EXOVAULT_AGENT_KEY": "${EXOVAULT_AGENT_KEY}",
+      "EXOVAULT_API_URL": "${EXOVAULT_API_URL}"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "exovault",
+  "version": "1.4.1",
+  "description": "Encrypted durable memory for Claude Code — automatic turn capture, context injection, and 40+ MCP tools",
+  "author": {
+    "name": "ExoVault",
+    "url": "https://exovault.co"
+  },
+  "homepage": "https://exovault.co",
+  "repository": "https://github.com/exo-vault/claude-code-plugin",
+  "license": "MIT",
+  "keywords": ["memory", "persistence", "encrypted", "knowledge-graph", "turn-capture"]
+}
