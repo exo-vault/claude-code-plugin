@@ -1,0 +1,68 @@
+name: Validate Plugin
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate plugin.json structure
+        run: |
+          node -e "
+            const m = require('./.claude-plugin/plugin.json');
+            const required = ['name', 'version', 'description', 'author', 'license'];
+            const missing = required.filter(k => !m[k]);
+            if (missing.length) {
+              console.error('Missing required fields:', missing);
+              process.exit(1);
+            }
+            if (!/^\d+\.\d+\.\d+/.test(m.version)) {
+              console.error('Invalid version format:', m.version);
+              process.exit(1);
+            }
+            console.log('plugin.json valid:', m.name, 'v' + m.version);
+          "
+
+      - name: Validate hooks.json structure
+        run: |
+          node -e "
+            const h = require('./hooks/hooks.json');
+            if (!h.hooks || typeof h.hooks !== 'object') {
+              console.error('hooks.json must have a hooks object');
+              process.exit(1);
+            }
+            console.log('hooks.json valid, events:', Object.keys(h.hooks).join(', '));
+          "
+
+      - name: Verify referenced hook scripts exist
+        run: |
+          for script in shared-config.js inject-context.js capture-turn.js; do
+            if [ ! -f "hooks/$script" ]; then
+              echo "ERROR: hooks/$script not found"
+              exit 1
+            fi
+            # Verify LF line endings (no CR)
+            if grep -l $'\r' "hooks/$script" > /dev/null; then
+              echo "ERROR: hooks/$script contains CRLF — must be LF for bash shebangs"
+              exit 1
+            fi
+          done
+          echo "All hook scripts present with LF line endings"
+
+      - name: Syntax-check hook scripts
+        run: |
+          for script in hooks/*.js; do
+            node --check "$script" || exit 1
+          done
+          echo "All hook scripts parse correctly"
